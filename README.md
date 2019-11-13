@@ -1,7 +1,7 @@
 ## Environment
 - Tested on Ubuntu 14.04 64bit and 16.04 64bit
 
-## Installation
+## Installation 
 
 ~~~~{.sh}
 # disable ptrace_scope for PIN
@@ -10,11 +10,17 @@ $ echo 0|sudo tee /proc/sys/kernel/yama/ptrace_scope
 # install z3 and system deps
 $ ./setup.sh
 
-# install using virtual env
+# install (recommended)
+$ chmod 755 -R . 
+$ pip install . 
+
+# install using virtual env (
 $ virtualenv venv
 $ source venv/bin/activate
+$ chmod 755 -R . 
 $ pip install .
 ~~~~
+
 
 ## Installation using Docker
 
