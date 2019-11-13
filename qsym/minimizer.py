@@ -62,8 +62,6 @@ class TestcaseMinimizer(object):
                "--"
         ] + self.cmd
 
-	#print (" ".join(cmd))
-
         cmd, stdin = utils.fix_at_file(cmd, testcase)
         with open(os.devnull, "wb") as devnull:
             proc = sp.Popen(cmd, stdin=sp.PIPE, stdout=devnull, stderr=devnull)
