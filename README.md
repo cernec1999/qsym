@@ -10,11 +10,11 @@ $ echo 0|sudo tee /proc/sys/kernel/yama/ptrace_scope
 # install z3 and system deps
 $ ./setup.sh
 
-# install (recommended)
+# install
 $ chmod 755 -R . 
 $ pip install . 
 
-# install using virtual env (
+# install using virtual env (not recommended)
 $ virtualenv venv
 $ source venv/bin/activate
 $ chmod 755 -R . 
