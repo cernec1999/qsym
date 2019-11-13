@@ -207,10 +207,10 @@ class AFLExecutor(object):
         index = cmd.index("--")
 
         ''' Stefan - get specified QEMU mode (V1 or V2). '''
-	try:
-		afl_path = getenv('AFL_PATH')
-	except:
-		afl_path = os.path.dirname(cmd[0])
+        try:
+            afl_path = getenv('AFL_PATH')
+        except:
+            afl_path = os.path.dirname(cmd[0])
 
         if ("-QQ" in cmd):
             return cmd[index+1:], afl_path, "-QQ"
