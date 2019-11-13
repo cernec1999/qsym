@@ -61,7 +61,7 @@ class TestcaseMinimizer(object):
                "--"
         ] + self.cmd
 
-        #print ("COMMAND", cmd) #debug
+        print ("cmd: [%s]" % " ".join(cmd)) #debug
 
         cmd, stdin = utils.fix_at_file(cmd, testcase)
         with open(os.devnull, "wb") as devnull:

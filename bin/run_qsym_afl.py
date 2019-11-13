@@ -32,6 +32,8 @@ def check_args(args):
     while time.time() < t_end:
         if not os.path.exists(args.output):
             continue
+        else:
+            break
     #if not os.path.exists(args.output):
         #raise ValueError('no such directory')
 

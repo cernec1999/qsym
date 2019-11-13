@@ -65,6 +65,8 @@ def get_afl_cmd(fuzzer_stats):
     while time.time() < t_end:
         if not os.path.exists(fuzzer_stats):
             continue
+        else:
+            break
 
     with open(fuzzer_stats) as f:
         for l in f:
@@ -203,7 +205,7 @@ class AFLExecutor(object):
         cmd = get_afl_cmd(os.path.join(self.afl_dir, "fuzzer_stats"))
         assert cmd is not None
         index = cmd.index("--")
-        
+
         ''' Stefan - get specified QEMU mode (V1 or V2). '''
         if ("-QQ" in cmd):
             return cmd[index+1:], os.path.dirname(cmd[0]), "-QQ"
