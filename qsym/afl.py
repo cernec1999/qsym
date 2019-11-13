@@ -207,12 +207,17 @@ class AFLExecutor(object):
         index = cmd.index("--")
 
         ''' Stefan - get specified QEMU mode (V1 or V2). '''
+	try:
+		afl_path = getenv('AFL_PATH')
+	except:
+		afl_path = os.path.dirname(cmd[0])
+
         if ("-QQ" in cmd):
-            return cmd[index+1:], os.path.dirname(cmd[0]), "-QQ"
+            return cmd[index+1:], afl_path, "-QQ"
         elif (("-Q" in cmd) and ("-QQ" not in cmd)):
-            return cmd[index+1:], os.path.dirname(cmd[0]), "-Q"
+            return cmd[index+1:], afl_path, "-Q"
         else:
-            return cmd[index+1:], os.path.dirname(cmd[0]), ""
+            return cmd[index+1:], afl_path, ""
         #return cmd[index+1:], os.path.dirname(cmd[0]), '-Q' in cmd
 
     def import_state(self):

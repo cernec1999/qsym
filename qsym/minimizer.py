@@ -26,6 +26,7 @@ class TestcaseMinimizer(object):
         self.cmd = cmd
         self.qemu_mode = qemu_mode
         self.showmap = os.path.join(afl_path, "afl-showmap")
+
         self.bitmap_file = os.path.join(out_dir, "afl-bitmap")
         self.crash_bitmap_file = os.path.join(out_dir, "afl-crash-bitmap")
         _, self.temp_file = tempfile.mkstemp(dir=out_dir)
@@ -61,7 +62,7 @@ class TestcaseMinimizer(object):
                "--"
         ] + self.cmd
 
-        print ("cmd: [%s]" % " ".join(cmd)) #debug
+	#print (" ".join(cmd))
 
         cmd, stdin = utils.fix_at_file(cmd, testcase)
         with open(os.devnull, "wb") as devnull:
