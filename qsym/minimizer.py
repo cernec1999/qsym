@@ -3,7 +3,6 @@ import atexit
 import os
 import subprocess as sp
 import tempfile
-
 import utils
 
 # status for TestCaseMinimizer
@@ -51,13 +50,18 @@ class TestcaseMinimizer(object):
                "-b" # binary mode
         ]
 
-        if self.qemu_mode:
-            cmd += ['-Q']
+        ''' Stefan - use specified QEMU mode (V1 or V2). '''
+        if (self.qemu_mode != ""):
+        # if (self.qemu_mode):
+            cmd += [self.qemu_mode]
+            #cmd += ['-Q']
 
         cmd += ["-o",
                self.temp_file,
                "--"
         ] + self.cmd
+
+        #print ("COMMAND", cmd) #debug
 
         cmd, stdin = utils.fix_at_file(cmd, testcase)
         with open(os.devnull, "wb") as devnull:

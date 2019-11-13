@@ -10,9 +10,7 @@ import subprocess
 import sys
 import tempfile
 import time
-
 import pyinotify
-
 from conf import SO
 import executor
 import minimizer
@@ -62,6 +60,12 @@ def check_so_file():
             FATAL("Cannot find SO file!")
 
 def get_afl_cmd(fuzzer_stats):
+    ''' Stefan - timer to give AFL ample time to set up. '''
+    t_end = time.time() + 5
+    while time.time() < t_end:
+        if not os.path.exists(fuzzer_stats):
+            continue
+
     with open(fuzzer_stats) as f:
         for l in f:
             if l.startswith("command_line"):
@@ -117,6 +121,7 @@ class AFLExecutorState(object):
         return len(self.processed) + len(self.hang) + len(self.done)
 
 class AFLExecutor(object):
+
     def __init__(self, cmd, output, afl, name, filename=None, mail=None, asan_bin=None):
         self.cmd = cmd
         self.output = output
@@ -130,6 +135,7 @@ class AFLExecutor(object):
         cmd, afl_path, qemu_mode = self.parse_fuzzer_stats()
         self.minimizer = minimizer.TestcaseMinimizer(
             cmd, afl_path, self.output, qemu_mode)
+        
         self.import_state()
         self.make_dirs()
         atexit.register(self.cleanup)
@@ -197,7 +203,15 @@ class AFLExecutor(object):
         cmd = get_afl_cmd(os.path.join(self.afl_dir, "fuzzer_stats"))
         assert cmd is not None
         index = cmd.index("--")
-        return cmd[index+1:], os.path.dirname(cmd[0]), '-Q' in cmd
+        
+        ''' Stefan - get specified QEMU mode (V1 or V2). '''
+        if ("-QQ" in cmd):
+            return cmd[index+1:], os.path.dirname(cmd[0]), "-QQ"
+        elif (("-Q" in cmd) and ("-QQ" not in cmd)):
+            return cmd[index+1:], os.path.dirname(cmd[0]), "-Q"
+        else:
+            return cmd[index+1:], os.path.dirname(cmd[0]), ""
+        #return cmd[index+1:], os.path.dirname(cmd[0]), '-Q' in cmd
 
     def import_state(self):
         if os.path.exists(self.metadata):

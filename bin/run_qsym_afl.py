@@ -12,7 +12,6 @@ import subprocess as sp
 import sys
 import tempfile
 import time
-
 import pyinotify
 import qsym
 
@@ -28,15 +27,22 @@ def parse_args():
     return p.parse_args()
 
 def check_args(args):
-    if not os.path.exists(args.output):
-        raise ValueError('no such directory')
+    ''' Stefan - timer to give AFL ample time to set up. '''
+    t_end = time.time() + 5
+    while time.time() < t_end:
+        if not os.path.exists(args.output):
+            continue
+    #if not os.path.exists(args.output):
+        #raise ValueError('no such directory')
+
 
 def main():
     args = parse_args()
     check_args(args)
 
     e = qsym.afl.AFLExecutor(args.cmd, args.output, args.afl,
-            args.name, args.filename, args.mail, args.asan_bin)
+            args.name, args.filename, args.mail, args.asan_bin)   
+    
     try:
         e.run()
     finally:
