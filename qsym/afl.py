@@ -60,18 +60,27 @@ def check_so_file():
             FATAL("Cannot find SO file!")
 
 def get_afl_cmd(fuzzer_stats):
-    ''' Stefan - timer to give AFL ample time to set up. '''
-    t_end = time.time() + 5
-    while time.time() < t_end:
-        if not os.path.exists(fuzzer_stats):
-            continue
-        else:
-            break
+    if not os.path.exists(fuzzer_stats):
+        logger.debug("Waiting for AFL fuzzer_stats...")
+        t_wait = time.time() + 900
+
+        # Give AFL ample time to set up.
+        
+        while time.time() < t_wait:
+            if os.path.exists(fuzzer_stats):
+                break
+            else:
+                continue
+
+    if not os.path.exists(fuzzer_stats):
+        logger.debug("Missing AFL fuzzer_stats!")
+        exit(0)
+
+    logger.debug("Found AFL fuzzer_stats")
 
     with open(fuzzer_stats) as f:
         for l in f:
             if l.startswith("command_line"):
-                # format= "command_line: [cmd]"
                 return l.split(":")[1].strip().split()
 
 
@@ -124,20 +133,27 @@ class AFLExecutorState(object):
 
 class AFLExecutor(object):
 
-    def __init__(self, cmd, output, afl, name, filename=None, mail=None, asan_bin=None):
+    def __init__(self, cmd, trace_bin, output, afl, name, filename=None, mail=None):
         self.cmd = cmd
+        self.trace_bin = trace_bin
         self.output = output
         self.afl = afl
         self.name = name
         self.filename = ".cur_input" if filename is None else filename
         self.mail = mail
-        self.set_asan_cmd(asan_bin)
 
         self.tmp_dir = tempfile.mkdtemp()
         cmd, afl_path, qemu_mode = self.parse_fuzzer_stats()
-        self.minimizer = minimizer.TestcaseMinimizer(
-            cmd, afl_path, self.output, qemu_mode)
+
+        if qemu_mode != "":
+            logger.debug("Tracing with QEMU mode: %s" % qemu_mode)
+
+        self.minimizer = minimizer.TestcaseMinimizer(cmd, trace_bin, afl_path, qemu_mode, self.output)
         
+        if os.path.exists("%s/%s" % (self.output, self.name)):
+            logger.debug("Removing old Qsym subdirectory...")
+            shutil.rmtree("%s/%s" % (self.output, self.name))
+
         self.import_state()
         self.make_dirs()
         atexit.register(self.cleanup)
@@ -178,23 +194,6 @@ class AFLExecutor(object):
     def bitmap(self):
         return os.path.join(self.my_dir, "bitmap")
 
-    def set_asan_cmd(self, asan_bin):
-        symbolizer = ""
-        for e in [
-                "/usr/bin/llvm-symbolizer",
-                "/usr/bin/llvm-symbolizer-3.4",
-                "/usr/bin/llvm-symbolizer-3.8"]:
-            if os.path.exists(e):
-                symbolizer = e
-                break
-        os.putenv("ASAN_SYMBOLIZER_PATH", symbolizer)
-        os.putenv("ASAN_OPTIONS", "symbolize=1")
-
-        if asan_bin and os.path.exists(asan_bin):
-            self.asan_cmd = [asan_bin] + self.cmd[1:]
-        else:
-            self.asan_cmd = None
-
     def make_dirs(self):
         mkdir(self.tmp_dir)
         mkdir(self.my_queue)
@@ -206,7 +205,8 @@ class AFLExecutor(object):
         assert cmd is not None
         index = cmd.index("--")
 
-        ''' Stefan - get specified QEMU mode (V1 or V2). '''
+        # Get target args and/or specified QEMU mode (V1 or V2)
+
         try:
             afl_path = getenv('AFL_PATH')
         except:
@@ -218,7 +218,6 @@ class AFLExecutor(object):
             return cmd[index+1:], afl_path, "-Q"
         else:
             return cmd[index+1:], afl_path, ""
-        #return cmd[index+1:], os.path.dirname(cmd[0]), '-Q' in cmd
 
     def import_state(self):
         if os.path.exists(self.metadata):
@@ -337,12 +336,6 @@ class AFLExecutor(object):
 
         self.state.num_crash_reports += 1
         info = {}
-        if self.asan_cmd is not None:
-            stdout, stderr = utils.run_command(
-                    ["timeout", "-k", "5", "5"] + self.asan_cmd,
-                    fp)
-            info["STDOUT"] = stdout
-            info["STDERR"] = stderr
         self.send_mail("Crash found", info, [fp])
 
     def export_state(self):
@@ -352,7 +345,6 @@ class AFLExecutor(object):
     def cleanup(self):
         try:
             self.export_state()
-            #shutil.rmtree(self.tmp_dir)
         except:
             pass
 

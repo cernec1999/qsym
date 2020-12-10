@@ -22,10 +22,15 @@ def write_bitmap_file(bitmap_file, bitmap):
         f.write(''.join(map(chr, bitmap)))
 
 class TestcaseMinimizer(object):
-    def __init__(self, cmd, afl_path, out_dir, qemu_mode, map_size=MAP_SIZE):
+    def __init__(self, cmd, trace_bin, afl_path, qemu_mode, out_dir, map_size=MAP_SIZE):
         self.cmd = cmd
         self.qemu_mode = qemu_mode
+        self.trace_bin = trace_bin
         self.showmap = os.path.join(afl_path, "afl-showmap")
+
+        # Update cmd to reflect desired trace bin
+
+        cmd[0] = trace_bin
 
         self.bitmap_file = os.path.join(out_dir, "afl-bitmap")
         self.crash_bitmap_file = os.path.join(out_dir, "afl-crash-bitmap")
@@ -51,11 +56,8 @@ class TestcaseMinimizer(object):
                "-b" # binary mode
         ]
 
-        ''' Stefan - use specified QEMU mode (V1 or V2). '''
         if (self.qemu_mode != ""):
-        # if (self.qemu_mode):
             cmd += [self.qemu_mode]
-            #cmd += ['-Q']
 
         cmd += ["-o",
                self.temp_file,

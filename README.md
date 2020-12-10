@@ -12,7 +12,7 @@ $ ./setup.sh
 
 # install
 $ chmod 755 -R . 
-$ pip install . 
+$ python -m pip install . 
 
 # install using virtual env (not recommended)
 $ virtualenv venv
@@ -51,7 +51,7 @@ $ $(AFL_ROOT)/afl-fuzz -M afl-master -i $(INPUT) -o $(OUTPUT) -- $(AFL_CMDLINE)
 # run AFL slave
 $ $(AFL_ROOT)/afl-fuzz -S afl-slave -i $(INPUT) -o $(OUTPUT) -- $(AFL_CMDLINE)
 # run QSYM
-$ bin/run_qsym_afl.py -a afl-slave -o $(OUTPUT) -n qsym -- $(QSYM_CMDLINE)
+$ bin/run_qsym_afl.py -a afl-slave -o $(OUTPUT) -n qsym -b $(TRACE_BINARY) -- $(QSYM_CMDLINE)
 ~~~~
 
 ## Run for testing
