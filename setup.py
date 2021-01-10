@@ -49,7 +49,7 @@ setup(name='qsym',
       install_requires=[
           'termcolor',          # for qsym/utils.py
           'pyinotify',          # for qsym/afl.py (XXX. doesn't seem to be using?)
-          'pytest-xdist',             # for unit testing
+          #'pytest-xdist',             # for unit testing
       ],
       data_files=data_files
 )
