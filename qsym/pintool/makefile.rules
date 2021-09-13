@@ -66,6 +66,12 @@ endif
 
 TOOL_CXXFLAGS += -I$(CURDIR)
 TOOL_CXXFLAGS += -g -Wno-error=unused-function -std=c++11 -DCONFIG_CONTEXT_SENSITIVE
+TOOL_CXXFLAGS += -I/usr/lib/llvm-4.0/include -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS
+
+TOOL_LPATHS += -Wl,-rpath=/usr/local/qsym/lib -L/usr/local/qsym/lib
+TOOL_LPATHS += -Wl,-rpath=/usr/lib/llvm-4.0/lib -L/usr/lib/llvm-4.0/lib
+
+TOOL_LIBS += -lLLVM-4.0
 TOOL_LIBS += -lz3
 
 ##############################################################
